@@ -1,6 +1,6 @@
 // JavaScript for handling ingredient popups
 const ingredientsData = {
-  'cheeseburger': 'Buns, Beef patty, Cheese, Lettuce, Tomato, Pickles, Ketchup, Mustard',
+  'cheeseburger': 'Have a Have a look onme pound fish',
   'coke': 'Carbonated water, Sugar, Caffeine, Phosphoric acid, Caramel color, Natural flavors',
   'chocolate-donut': 'Flour, Cocoa powder, Sugar, Butter, Eggs, Milk, Baking powder, Vanilla extract'
 };
