@@ -68,21 +68,14 @@ function loadImage(src, image) {
     });
 }
 
-function loadAudio(src, assignFunc) {
+function loadAudio(src) {
     return new Promise((resolve, reject) => {
-        const audio = new Audio(src);
-        audio.oncanplaythrough = () => {
-            assignFunc(audio);
-            resolve();
-        };
-        audio.onerror = () => {
-            console.warn(`Failed to load audio: ${src}`);
-            assignFunc(new Audio()); // empty fallback audio
-            resolve();
-        };
+        const audio = new Audio();
+        audio.src = src;
+        audio.addEventListener('canplaythrough', () => resolve(audio), false);
+        audio.addEventListener('error', (e) => reject(e), false);
     });
 }
-
 function moveShip() {
     ship.x += ship.dx;
     ship.y += ship.dy;
