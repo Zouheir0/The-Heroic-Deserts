@@ -112,7 +112,11 @@ function drawBullets() {
     bullets.forEach(bullet => {
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        bullet.y -= bullet.speed; // Move bullet up
     });
+
+    // Remove bullets off screen
+    bullets = bullets.filter(bullet => bullet.y >= 0);
 }
 
 // Alien Mechanics
