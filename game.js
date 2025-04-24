@@ -30,13 +30,8 @@ let mouseY = 0;
 
 // Images
 const shipImage = new Image();
-shipImage.src = 'images/spaceship.png'; // Player Ship Image
-
 const alienImage = new Image();
-alienImage.src = 'images/alien.png'; // Alien Image
-
 const backgroundImage = new Image();
-backgroundImage.src = 'images/background.png'; // Background Image
 
 // Sounds
 const shootSound = new Audio('sounds/shoot.mp3');
@@ -45,11 +40,48 @@ const backgroundMusic = new Audio('sounds/background.mp3');
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.3;
 
+// Load images and start the game
+window.onload = () => {
+    loadAssets().then(() => {
+        startGame();
+    }).catch((err) => {
+        console.error('Error loading assets:', err);
+    });
+};
+
+// Function to load images and sounds
+function loadAssets() {
+    return Promise.all([
+        loadImage('images/spaceship.png', shipImage),
+        loadImage('images/alien.png', alienImage),
+        loadImage('images/background.png', backgroundImage),
+        loadAudio('sounds/shoot.mp3'),
+        loadAudio('sounds/hit.mp3'),
+        loadAudio('sounds/background.mp3')
+    ]);
+}
+
+function loadImage(src, imgObj) {
+    return new Promise((resolve, reject) => {
+        imgObj.src = src;
+        imgObj.onload = resolve;
+        imgObj.onerror = reject;
+    });
+}
+
+function loadAudio(src) {
+    return new Promise((resolve, reject) => {
+        const audio = new Audio(src);
+        audio.oncanplaythrough = resolve;
+        audio.onerror = reject;
+    });
+}
+
 // Player Ship Movement
 function moveShip() {
     ship.x += ship.dx;
     ship.y += ship.dy;
-    
+
     // Boundaries for ship
     if (ship.x < 0) ship.x = 0;
     if (ship.x + ship.width > canvas.width) ship.x = canvas.width - ship.width;
@@ -205,8 +237,3 @@ document.addEventListener('keyup', (e) => {
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown') ship.dy = 0;
     if (e.code === 'Space') spaceKey = false;
 });
-
-// Start Game on Page Load
-window.onload = function() {
-    startGame();
-};
