@@ -1,23 +1,39 @@
-/* Resetting margin and padding for all elements */
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
-/* Fullscreen canvas */
-html, body {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+body {
+  margin: 0;
+  padding: 0;
   background-color: #000;
-  color: #fff;
-  margin: 0;  /* Ensure no default margin */
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
 }
 
-/* Centering the canvas */
 #gameCanvas {
-  border: 1px solid #fff;
-  background-color: #000;
+  display: block;
+  margin: 20px auto;
+  background-color: black;
+  border: 3px solid #00ffcc;
+}
+
+.controls {
+  margin: 10px;
+}
+
+.controls button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  background-color: #222;
+  color: #0ff;
+  border: 2px solid #0ff;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background-color: #0ff;
+  color: #000;
 }
