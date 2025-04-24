@@ -49,15 +49,14 @@ window.onload = () => {
 
 function loadAssets() {
     return Promise.all([
-        loadImage('images/spaceship.png', shipImage),
-        loadImage('images/alien.png', alienImage),
-        loadImage('images/background.png', backgroundImage),
-        loadAudio('sounds/shoot.mp3', (a) => shootSound = a),
-        loadAudio('sounds/hit.mp3', (a) => hitSound = a),
-        loadAudio('sounds/background.mp3', (a) => backgroundMusic = a)
+        loadImage('https://i.imgur.com/Z5xqF6M.png', shipImage),        // spaceship.png
+        loadImage('https://i.imgur.com/Nj2D1GJ.png', alienImage),       // alien.png
+        loadImage('https://i.imgur.com/jf9nrcF.jpg', backgroundImage),  // background.png
+        loadAudio('sounds/shoot.mp3'),
+        loadAudio('sounds/hit.mp3'),
+        loadAudio('sounds/background.mp3')
     ]);
 }
-
 function loadImage(src, image) {
     return new Promise((resolve, reject) => {
         image.src = src;
