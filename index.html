@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alien Invasion</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Invasion Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
 
-  <div id="touchControls">
-    <button id="leftBtn">◀</button>
-    <button id="shootBtn">●</button>
-    <button id="rightBtn">▶</button>
-  </div>
-
-  <audio id="shootSound" src="shoot.wav" preload="auto"></audio>
-  <audio id="explosionSound" src="explosion.wav" preload="auto"></audio>
-  <audio id="bgMusic" src="music.mp3" preload="auto" loop></audio>
-
-  <script src="game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
