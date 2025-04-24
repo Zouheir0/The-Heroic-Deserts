@@ -20,51 +20,46 @@ let enemies = [];
 let score = 0;
 let highScore = localStorage.getItem('highScore') || 0;
 let gameOver = false;
-let rightKey = false;
-let leftKey = false;
 let spaceKey = false;
 
 // Images
 const shipImage = new Image();
 const alienImage = new Image();
 const backgroundImage = new Image();
-let imagesLoaded = true;
 
 // Sounds
-let shootSound = new Audio();
-let hitSound = new Audio();
-let backgroundMusic = new Audio();
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.3;
+let shootSound, hitSound, backgroundMusic;
 
+// Load images and sounds, then start game
 window.onload = () => {
     loadAssets().then(() => {
         startGame();
     }).catch((err) => {
         console.error('Error loading assets:', err);
-        imagesLoaded = false; // fallback: still run the game
-        startGame();
     });
 };
 
+// Load all assets
 function loadAssets() {
     return Promise.all([
-        loadImage('https://i.imgur.com/Z5xqF6M.png', shipImage),       // spaceship
-loadImage('https://i.imgur.com/Nj2D1GJ.png', alienImage),      // alien
-loadImage('https://i.imgur.com/jf9nrcF.jpg', backgroundImage), // background
-        loadAudio('sounds/shoot.mp3'),
-        loadAudio('sounds/hit.mp3'),
-        loadAudio('sounds/background.mp3')
+        loadImage('images/spaceship.png', shipImage),
+        loadImage('images/alien.png', alienImage),
+        loadImage('images/background.png', backgroundImage),
+        loadAudio('sounds/shoot.mp3').then(audio => shootSound = audio),
+        loadAudio('sounds/hit.mp3').then(audio => hitSound = audio),
+        loadAudio('sounds/background.mp3').then(audio => {
+            backgroundMusic = audio;
+            backgroundMusic.loop = true;
+            backgroundMusic.volume = 0.3;
+        })
     ]);
 }
-function loadImage(src, image) {
+
+function loadImage(src, imgObj) {
     return new Promise((resolve, reject) => {
-        image.src = src;
-        image.onload = resolve;
-        image.onerror = () => {
-            console.warn(`Failed to load image: ${src}`);
-            resolve(); // don't block the game
-        };
+        imgObj.onload = resolve;
+        imgObj.onerror = () => reject(`Failed to load image: ${src}`);
+        imgObj.src = src;
     });
 }
 
@@ -72,10 +67,11 @@ function loadAudio(src) {
     return new Promise((resolve, reject) => {
         const audio = new Audio();
         audio.src = src;
-        audio.addEventListener('canplaythrough', () => resolve(audio), false);
-        audio.addEventListener('error', (e) => reject(e), false);
+        audio.addEventListener('canplaythrough', () => resolve(audio));
+        audio.addEventListener('error', () => reject(`Failed to load sound: ${src}`));
     });
 }
+
 function moveShip() {
     ship.x += ship.dx;
     ship.y += ship.dy;
@@ -87,65 +83,51 @@ function moveShip() {
 }
 
 function drawShip() {
-    if (imagesLoaded) {
-        ctx.drawImage(shipImage, ship.x, ship.y, ship.width, ship.height);
-    } else {
-        ctx.fillStyle = '#0f0';
-        ctx.fillRect(ship.x, ship.y, ship.width, ship.height);
-    }
+    ctx.drawImage(shipImage, ship.x, ship.y, ship.width, ship.height);
 }
 
 function shootBullet() {
-    shootSound.play();
+    if (shootSound) shootSound.play();
     bullets.push({
-        x: ship.x + ship.width / 2 - 2.5,
+        x: ship.x + ship.width / 2 - 2,
         y: ship.y,
-        width: 5,
-        height: 20,
-        speed: 8
+        width: 4,
+        height: 10,
+        speed: 7
     });
 }
 
 function drawBullets() {
-    ctx.fillStyle = "#FFF";
-    bullets.forEach(b => ctx.fillRect(b.x, b.y -= b.speed, b.width, b.height));
+    ctx.fillStyle = 'white';
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 }
 
 function spawnAlien() {
     enemies.push({
         x: Math.random() * (canvas.width - 50),
-        y: -50,
+        y: -60,
         width: 50,
         height: 50,
-        speed: Math.random() * 2 + 1
+        speed: 2 + Math.random() * 2
     });
 }
 
 function drawAliens() {
-    enemies.forEach(alien => {
-        if (imagesLoaded) {
-            ctx.drawImage(alienImage, alien.x, alien.y, alien.width, alien.height);
-        } else {
-            ctx.fillStyle = '#f00';
-            ctx.fillRect(alien.x, alien.y, alien.width, alien.height);
-        }
-    });
+    enemies.forEach(e => ctx.drawImage(alienImage, e.x, e.y, e.width, e.height));
 }
 
 function moveEnemies() {
-    enemies.forEach(a => a.y += a.speed);
+    enemies.forEach(e => e.y += e.speed);
 }
 
 function checkCollisions() {
-    bullets.forEach((bullet, bIdx) => {
-        enemies.forEach((alien, aIdx) => {
-            if (bullet.x < alien.x + alien.width &&
-                bullet.x + bullet.width > alien.x &&
-                bullet.y < alien.y + alien.height &&
-                bullet.y + bullet.height > alien.y) {
-                hitSound.play();
-                bullets.splice(bIdx, 1);
-                enemies.splice(aIdx, 1);
+    bullets.forEach((b, bi) => {
+        enemies.forEach((e, ei) => {
+            if (b.x < e.x + e.width && b.x + b.width > e.x &&
+                b.y < e.y + e.height && b.y + b.height > e.y) {
+                if (hitSound) hitSound.play();
+                enemies.splice(ei, 1);
+                bullets.splice(bi, 1);
                 score += 10;
             }
         });
@@ -153,35 +135,31 @@ function checkCollisions() {
 }
 
 function checkGameOver() {
-    enemies.forEach(alien => {
-        if (alien.y + alien.height > ship.y && !gameOver) {
+    enemies.forEach(e => {
+        if (e.y + e.height > ship.y && !gameOver) {
             gameOver = true;
             ctx.fillStyle = 'red';
             ctx.font = '30px Arial';
             ctx.fillText('GAME OVER!', canvas.width / 2 - 90, canvas.height / 2);
-            ctx.fillText(`Score: ${score}`, canvas.width / 2 - 50, canvas.height / 2 + 40);
+            ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2 + 40);
             if (score > highScore) {
+                highScore = score;
                 localStorage.setItem('highScore', score);
             }
-            ctx.fillText(`High Score: ${highScore}`, canvas.width / 2 - 70, canvas.height / 2 + 80);
+            ctx.fillText('High Score: ' + highScore, canvas.width / 2 - 70, canvas.height / 2 + 80);
         }
     });
 }
 
 function drawScore() {
-    ctx.fillStyle = "#FFF";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${score}`, 20, 30);
-    ctx.fillText(`High Score: ${highScore}`, canvas.width - 180, 30);
+    ctx.fillStyle = 'white';
+    ctx.font = '18px Arial';
+    ctx.fillText('Score: ' + score, 10, 25);
+    ctx.fillText('High Score: ' + highScore, 650, 25);
 }
 
 function drawBackground() {
-    if (imagesLoaded) {
-        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    } else {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 }
 
 function update() {
@@ -190,8 +168,8 @@ function update() {
     drawBackground();
     drawShip();
     drawBullets();
-    moveEnemies();
     drawAliens();
+    moveEnemies();
     checkCollisions();
     checkGameOver();
     drawScore();
@@ -204,15 +182,15 @@ function gameLoop() {
 }
 
 function startGame() {
-    setInterval(spawnAlien, 1000);
-    backgroundMusic.play().catch(() => console.warn('Autoplay blocked.'));
+    setInterval(spawnAlien, 1500);
+    if (backgroundMusic) backgroundMusic.play().catch(() => {});
     gameLoop();
 }
 
 // Controls
 document.addEventListener('keydown', e => {
-    if (e.code === 'ArrowRight') ship.dx = ship.speed;
     if (e.code === 'ArrowLeft') ship.dx = -ship.speed;
+    if (e.code === 'ArrowRight') ship.dx = ship.speed;
     if (e.code === 'ArrowUp') ship.dy = -ship.speed;
     if (e.code === 'ArrowDown') ship.dy = ship.speed;
     if (e.code === 'Space' && !spaceKey) {
@@ -222,7 +200,7 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => {
-    if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') ship.dx = 0;
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') ship.dx = 0;
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown') ship.dy = 0;
     if (e.code === 'Space') spaceKey = false;
 });
