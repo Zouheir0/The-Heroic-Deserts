@@ -1,4 +1,4 @@
-/* Resetting margin and padding */
+/* Resetting margin and padding for all elements */
 * {
   margin: 0;
   padding: 0;
@@ -13,6 +13,7 @@ html, body {
   align-items: center;
   background-color: #000;
   color: #fff;
+  margin: 0;  /* Ensure no default margin */
 }
 
 /* Centering the canvas */
