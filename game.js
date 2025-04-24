@@ -49,9 +49,9 @@ window.onload = () => {
 
 function loadAssets() {
     return Promise.all([
-        loadImage('https://i.imgur.com/Z5xqF6M.png', shipImage),        // spaceship.png
-        loadImage('https://i.imgur.com/Nj2D1GJ.png', alienImage),       // alien.png
-        loadImage('https://i.imgur.com/jf9nrcF.jpg', backgroundImage),  // background.png
+        loadImage('https://i.imgur.com/Z5xqF6M.png', shipImage),       // spaceship
+loadImage('https://i.imgur.com/Nj2D1GJ.png', alienImage),      // alien
+loadImage('https://i.imgur.com/jf9nrcF.jpg', backgroundImage), // background
         loadAudio('sounds/shoot.mp3'),
         loadAudio('sounds/hit.mp3'),
         loadAudio('sounds/background.mp3')
