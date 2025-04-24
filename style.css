@@ -5,9 +5,29 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  flex-direction: column;
+  touch-action: manipulation;
 }
 
 canvas {
   border: 2px solid white;
   background-color: #111;
+  max-width: 100%;
+  height: auto;
+}
+
+#touchControls {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+#touchControls button {
+  padding: 20px 30px;
+  font-size: 24px;
+  border-radius: 10px;
+  background: white;
+  border: none;
+  color: black;
 }

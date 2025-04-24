@@ -1,28 +1,4 @@
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Heroic Deserts</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <!-- Top Header -->
-  <header>
-    <h1 id="top">The Heroic Deserts</h1>
-    <nav class="navbar">
-      <a href="#burgers">Burgers</a>
-      <a href="#drinks">Drinks</a>
-      <a href="#donuts">Donuts</a>
-    </nav>
-  </header>
-
-  <!-- Floating Side Menu -->
-  <div class="floating-menu">
-
-  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -32,6 +8,17 @@
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <div id="touchControls">
+    <button id="leftBtn">◀</button>
+    <button id="shootBtn">●</button>
+    <button id="rightBtn">▶</button>
+  </div>
+
+  <audio id="shootSound" src="shoot.wav" preload="auto"></audio>
+  <audio id="explosionSound" src="explosion.wav" preload="auto"></audio>
+  <audio id="bgMusic" src="music.mp3" preload="auto" loop></audio>
+
   <script src="game.js"></script>
 </body>
 </html>
