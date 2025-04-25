@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Alien Shooter Game</title>
+    <title>Alien Invasion Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div class="controls">
-        <button id="pauseButton">Pause</button>
-        <button id="unpauseButton" style="display:none;">Unpause</button>
-        <button id="resetButton">Reset</button>
+    <h1>Alien Invasion</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="ui">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+        <div id="moneyDisplay">Money: $0</div>
+        <div id="shop">
+            <h3>Shop</h3>
+            <button onclick="buyWeapon('laser')">Buy Laser ($50)</button>
+            <button onclick="buyWeapon('plasma')">Buy Plasma ($100)</button>
+        </div>
     </div>
     <script src="game.js"></script>
 </body>
