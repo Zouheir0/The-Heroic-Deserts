@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Alien Invasion Game</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alien Invasion</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <div id="startScreen">
     <h1>Alien Invasion</h1>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="ui">
-        <button id="startBtn">Start</button>
-        <button id="pauseBtn">Pause</button>
-        <button id="resetBtn">Reset</button>
-        <div id="moneyDisplay">Money: $0</div>
-        <div id="shop">
-            <h3>Shop</h3>
-            <button onclick="buyWeapon('laser')">Buy Laser ($50)</button>
-            <button onclick="buyWeapon('plasma')">Buy Plasma ($100)</button>
-        </div>
+    <p>Press SPACE to start</p>
+  </div>
+
+  <canvas id="gameCanvas" style="display: none;"></canvas>
+
+  <div id="ui">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+    <div id="shop">
+      <h3>Shop</h3>
+      <button onclick="buyWeapon('laser', 100)">Laser - $100</button>
+      <button onclick="buyWeapon('plasma', 200)">Plasma - $200</button>
     </div>
-    <script src="game.js"></script>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>

@@ -1,241 +1,285 @@
+// Setup canvas and context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 1024;
-canvas.height = 576;
+canvas.width = 800;
+canvas.height = 600;
 
+// Game Variables
 let ship = {
     x: canvas.width / 2 - 25,
-    y: canvas.height - 80,
+    y: canvas.height - 50,
     width: 50,
     height: 50,
     speed: 6,
     dx: 0,
     dy: 0,
     health: 100,
-    money: 0,
-    weaponLevel: 1,
+    gunTexture: 'images/gun.png',  // Player Gun Image
+    money: 0  // Money for buying weapons
 };
 
 let bullets = [];
 let enemies = [];
 let score = 0;
 let highScore = localStorage.getItem('highScore') || 0;
-let gamePaused = true;
 let gameOver = false;
-let wave = 0;
-let currentMap = 0;
+let paused = false;
+let gameStarted = false;
+let rightKey = false;
+let leftKey = false;
+let spaceKey = false;
+let mouseX = 0;
+let mouseY = 0;
 
-const maps = [
-    'https://i.imgur.com/5Kj8jvM.png', // map 1
-    'https://i.imgur.com/xF6HCU2.png', // map 2
-    'https://i.imgur.com/S7fr5sl.png', // map 3
-];
+// Images
+const shipImage = new Image();
+const alienImage = new Image();
+const backgroundImage = new Image();
 
-const assets = {
-    ship: 'https://i.imgur.com/nG7VyYr.png',
-    alien: 'https://i.imgur.com/N5uCbDu.png',
-    zombie: 'https://i.imgur.com/B3xWhzF.png',
-    ufo: 'https://i.imgur.com/94jXzMa.png',
-    background: maps[currentMap],
-    shootSound: 'https://www.soundjay.com/mechanical/sounds/mechanical-gun-01.mp3',
-    hitSound: 'https://www.soundjay.com/button/sounds/button-16.mp3',
-    bgMusic: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+// Sounds
+const shootSound = new Audio('sounds/shoot.mp3');
+const hitSound = new Audio('sounds/hit.mp3');
+const backgroundMusic = new Audio('sounds/background.mp3');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.3;
+
+// Load images and start the game
+window.onload = () => {
+    loadAssets().then(() => {
+        document.getElementById('startScreen').style.display = 'block';
+    }).catch((err) => {
+        console.error('Error loading assets:', err);
+    });
 };
 
-const shipImg = new Image();
-const alienImg = new Image();
-const zombieImg = new Image();
-const ufoImg = new Image();
-const bgImg = new Image();
-shipImg.src = assets.ship;
-alienImg.src = assets.alien;
-zombieImg.src = assets.zombie;
-ufoImg.src = assets.ufo;
-bgImg.src = assets.background;
-
-const shootSound = new Audio(assets.shootSound);
-const hitSound = new Audio(assets.hitSound);
-const bgMusic = new Audio(assets.bgMusic);
-bgMusic.loop = true;
-bgMusic.volume = 0.3;
-function drawShip() {
-    ctx.drawImage(shipImg, ship.x, ship.y, ship.width, ship.height);
-    ctx.fillStyle = "green";
-    ctx.fillRect(ship.x, ship.y - 10, ship.health / 2, 5);
+// Function to load images and sounds
+function loadAssets() {
+    return Promise.all([
+        loadImage('images/spaceship.png', shipImage),
+        loadImage('images/alien.png', alienImage),
+        loadImage('images/background.png', backgroundImage),
+        loadAudio('sounds/shoot.mp3'),
+        loadAudio('sounds/hit.mp3'),
+        loadAudio('sounds/background.mp3')
+    ]);
 }
 
-function shootBullet() {
-    shootSound.currentTime = 0;
-    shootSound.play();
-    bullets.push({
-        x: ship.x + ship.width / 2 - 2,
-        y: ship.y,
-        width: 5,
-        height: 15,
-        speed: 10 + ship.weaponLevel * 2
+function loadImage(src, imgObj) {
+    return new Promise((resolve, reject) => {
+        imgObj.src = src;
+        imgObj.onload = resolve;
+        imgObj.onerror = reject;
     });
 }
 
-function drawBullets() {
-    ctx.fillStyle = "yellow";
-    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+function loadAudio(src) {
+    return new Promise((resolve, reject) => {
+        const audio = new Audio(src);
+        audio.oncanplaythrough = resolve;
+        audio.onerror = reject;
+    });
 }
 
-function spawnEnemy(type = 'alien') {
-    const enemyTypes = {
-        alien: alienImg,
-        zombie: zombieImg,
-        ufo: ufoImg
+// Player Ship Movement
+function moveShip() {
+    if (paused) return;
+
+    ship.x += ship.dx;
+    ship.y += ship.dy;
+
+    // Boundaries for ship
+    if (ship.x < 0) ship.x = 0;
+    if (ship.x + ship.width > canvas.width) ship.x = canvas.width - ship.width;
+    if (ship.y < 0) ship.y = 0;
+    if (ship.y + ship.height > canvas.height) ship.y = canvas.height - ship.height;
+}
+
+// Draw Player Ship with Gun Texture
+function drawShip() {
+    ctx.drawImage(shipImage, ship.x, ship.y, ship.width, ship.height);
+}
+
+// Bullet Mechanics
+function shootBullet() {
+    if (paused || !gameStarted) return;
+
+    shootSound.play();
+    let bullet = {
+        x: ship.x + ship.width / 2 - 5,
+        y: ship.y,
+        width: 10,
+        height: 20,
+        speed: 6
     };
-    const speed = Math.random() * 1.5 + 1;
-    enemies.push({
-        type: type,
-        img: enemyTypes[type],
+    bullets.push(bullet);
+}
+
+// Draw Bullets
+function drawBullets() {
+    bullets.forEach(bullet => {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    });
+}
+
+// Alien Mechanics
+function spawnAlien() {
+    let alien = {
         x: Math.random() * (canvas.width - 50),
-        y: -60,
+        y: -50,
         width: 50,
         height: 50,
-        speed: speed,
-        health: type === 'zombie' ? 3 : 1
+        speed: Math.random() * 2 + 1
+    };
+    enemies.push(alien);
+}
+
+// Draw Aliens
+function drawAliens() {
+    enemies.forEach((alien, index) => {
+        ctx.drawImage(alienImage, alien.x, alien.y, alien.width, alien.height);
     });
 }
 
-function drawEnemies() {
-    enemies.forEach(e => {
-        ctx.drawImage(e.img, e.x, e.y, e.width, e.height);
-    });
-}
-
-function moveEnemies() {
-    enemies.forEach(e => {
-        e.y += e.speed;
-    });
-}
-
+// Bullet-Alien Collision Detection
 function checkCollisions() {
-    bullets.forEach((b, bi) => {
-        enemies.forEach((e, ei) => {
-            if (
-                b.x < e.x + e.width &&
-                b.x + b.width > e.x &&
-                b.y < e.y + e.height &&
-                b.y + b.height > e.y
-            ) {
-                hitSound.currentTime = 0;
+    bullets.forEach((bullet, bIndex) => {
+        enemies.forEach((alien, aIndex) => {
+            if (bullet.x < alien.x + alien.width &&
+                bullet.x + bullet.width > alien.x &&
+                bullet.y < alien.y + alien.height &&
+                bullet.y + bullet.height > alien.y) {
                 hitSound.play();
-                e.health -= ship.weaponLevel;
-                if (e.health <= 0) {
-                    enemies.splice(ei, 1);
-                    ship.money += 10;
-                    score += 5;
-                }
-                bullets.splice(bi, 1);
+                enemies.splice(aIndex, 1);
+                bullets.splice(bIndex, 1);
+                score += 10;
             }
         });
     });
 }
+
+// Enemy movement
+function moveEnemies() {
+    enemies.forEach(alien => {
+        alien.y += alien.speed;
+    });
+}
+
+// Game Over Check
 function checkGameOver() {
-    enemies.forEach(e => {
-        if (
-            e.y + e.height > ship.y &&
-            e.x < ship.x + ship.width &&
-            e.x + e.width > ship.x &&
-            !gameOver
-        ) {
-            ship.health -= 20;
-            if (ship.health <= 0) {
-                gameOver = true;
-                backgroundMusic.pause();
-                backgroundMusic.currentTime = 0;
-                alert("Game Over! Final Score: " + score);
+    enemies.forEach(alien => {
+        if (alien.y + alien.height > ship.y && !gameOver) {
+            gameOver = true;
+            ctx.fillStyle = 'red';
+            ctx.font = '30px Arial';
+            ctx.fillText('GAME OVER!', canvas.width / 2 - 90, canvas.height / 2);
+            ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2 + 40);
+            if (score > highScore) {
+                localStorage.setItem('highScore', score);
             }
+            ctx.fillText('High Score: ' + highScore, canvas.width / 2 - 70, canvas.height / 2 + 80);
         }
     });
 }
 
+// Draw Score
 function drawScore() {
-    ctx.fillStyle = "white";
-    ctx.font = "18px Arial";
-    ctx.fillText("Score: " + score, 10, 20);
-    ctx.fillText("Money: $" + ship.money, 10, 40);
-    ctx.fillText("Weapon Level: " + ship.weaponLevel, 10, 60);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '20px Arial';
+    ctx.fillText('Score: ' + score, 20, 30);
+    ctx.fillText('High Score: ' + highScore, canvas.width - 160, 30);
 }
 
+// Draw Background
 function drawBackground() {
-    ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 }
 
+// Update Game State
 function update() {
-    if (!paused && !gameOver) {
-        moveShip();
-        moveEnemies();
-        bullets.forEach(b => b.y -= b.speed);
-        bullets = bullets.filter(b => b.y > 0);
-        checkCollisions();
-        checkGameOver();
-    }
+    if (gameOver || paused) return;
 
+    moveShip();
     drawBackground();
     drawShip();
     drawBullets();
-    drawEnemies();
+    drawAliens();
+    moveEnemies();
+    checkCollisions();
+    checkGameOver();
     drawScore();
 }
 
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    update();
-    requestAnimationFrame(gameLoop);
-}
+// Create new aliens and start game loop
 function startGame() {
     gameStarted = true;
+    setInterval(spawnAlien, 1000);  // Spawn enemies every second
     backgroundMusic.play();
-    setInterval(spawnEnemy, 2000);
     gameLoop();
 }
 
-// --- CONTROLS ---
-document.addEventListener("keydown", e => {
-    if (e.code === "ArrowLeft") left = true;
-    if (e.code === "ArrowRight") right = true;
-    if (e.code === "ArrowUp") up = true;
-    if (e.code === "ArrowDown") down = true;
-    if (e.code === "Space") {
-        if (!gameStarted) startGame();
-        else shootBullet();
+// Game Loop
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+    update();
+    requestAnimationFrame(gameLoop); // Keep the loop running
+}
+
+// Control Ship Movement
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'ArrowRight') rightKey = true;
+    if (e.code === 'ArrowLeft') leftKey = true;
+    if (e.code === 'ArrowUp') ship.dy = -ship.speed;
+    if (e.code === 'ArrowDown') ship.dy = ship.speed;
+    if (e.code === 'Space') {
+        if (!spaceKey) {
+            if (!gameStarted) {
+                startGame();
+                document.getElementById('startScreen').style.display = 'none';
+            }
+            shootBullet();
+            spaceKey = true;
+        }
     }
 });
 
-document.addEventListener("keyup", e => {
-    if (e.code === "ArrowLeft") left = false;
-    if (e.code === "ArrowRight") right = false;
-    if (e.code === "ArrowUp") up = false;
-    if (e.code === "ArrowDown") down = false;
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowRight') rightKey = false;
+    if (e.code === 'ArrowLeft') leftKey = false;
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') ship.dy = 0;
+    if (e.code === 'Space') spaceKey = false;
 });
 
-// --- UI BUTTONS ---
-document.getElementById("pauseBtn").addEventListener("click", () => {
+// Pause/Unpause functionality
+document.getElementById('pauseBtn').addEventListener('click', () => {
     paused = !paused;
-    if (paused) backgroundMusic.pause();
-    else backgroundMusic.play();
-});
-
-document.getElementById("resetBtn").addEventListener("click", () => {
-    location.reload();
-});
-
-document.getElementById("shopBtn").addEventListener("click", () => {
-    if (ship.money >= 50) {
-        ship.weaponLevel++;
-        ship.money -= 50;
+    if (paused) {
+        backgroundMusic.pause();
+    } else {
+        backgroundMusic.play();
     }
 });
 
-// --- MAP SELECTION ---
-const mapSelect = document.getElementById("mapSelect");
-mapSelect.addEventListener("change", () => {
-    const map = mapSelect.value;
-    if (map === "desert") backgroundImg.src = "https://i.imgur.com/UOqM9.jpg";
-    if (map === "space") backgroundImg.src = "https://i.imgur.com/oCkEbrn.jpg";
-    if (map === "lava") backgroundImg.src = "https://i.imgur.com/Fo7CwdO.jpg";
+// Reset functionality
+document.getElementById('resetBtn').addEventListener('click', () => {
+    score = 0;
+    enemies = [];
+    bullets = [];
+    gameOver = false;
+    paused = false;
+    gameStarted = false;
+    ship.x = canvas.width / 2 - 25;
+    ship.y = canvas.height - 50;
+    document.getElementById('startScreen').style.display = 'block';
+    canvas.style.display = 'none';
 });
+
+// Weapon Shop
+function buyWeapon(weapon, cost) {
+    if (ship.money >= cost) {
+        ship.money -= cost;
+        alert(`You bought the ${weapon}!`);
+    } else {
+        alert('Not enough money!');
+    }
+}

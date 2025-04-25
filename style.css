@@ -1,46 +1,32 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: black;
+  background-color: black;
   color: white;
+  font-family: Arial, sans-serif;
   text-align: center;
 }
 
-h1 {
-  margin: 10px 0;
-  color: #00ffcc;
+#startScreen {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  font-size: 24px;
 }
 
-canvas {
-  border: 3px solid #00ffcc;
+#gameCanvas {
   display: block;
   margin: 0 auto;
   background-color: #000;
+  border: 2px solid white;
 }
 
-.ui {
-  margin-top: 10px;
-}
-
-button {
-  background-color: #00ffcc;
-  border: none;
-  padding: 10px 20px;
-  margin: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-button:hover {
-  background-color: #009999;
-}
-
-#moneyDisplay {
-  margin: 10px;
-  font-size: 18px;
+#ui {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
 }
 
 #shop {
-  margin-top: 20px;
+  margin-top: 10px;
 }
